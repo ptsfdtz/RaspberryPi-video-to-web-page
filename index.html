@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>WebSocket Client Example</title>
+  </head>
+  <body>
+    <div id="messages"></div>
+
+    <script>
+      // 创建WebSocket连接
+      const socket = new WebSocket("ws://192.168.10.103:12345");
+
+      // 监听连接打开事件
+      socket.addEventListener("open", function (event) {
+        console.log("WebSocket连接已打开");
+        // 发送消息给服务器
+        socket.send("get_joystick_data");
+        console.log("已发送请求获取手柄数据");
+      });
+
+      // 监听服务器发送的消息
+      socket.addEventListener("message", function (event) {
+        console.log("收到响应:", event.data);
+        // 显示接收到的消息
+        const messages = document.getElementById("messages");
+        messages.innerHTML += "<p>" + event.data + "</p>";
+      });
+
+      // 监听连接关闭事件
+      socket.addEventListener("close", function (event) {
+        console.log("WebSocket连接已关闭");
+      });
+
+      // 监听连接错误事件
+      socket.addEventListener("error", function (event) {
+        console.error("WebSocket连接发生错误:", event);
+      });
+    </script>
+  </body>
+</html>

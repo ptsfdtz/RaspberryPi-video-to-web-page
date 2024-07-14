@@ -1,4 +1,4 @@
-const socket = new WebSocket("ws://localhost:12345");
+const socket = new WebSocket("ws://192.168.10.103:12345");
 
 const leftStick = document.getElementById("LeftStick");
 const rightStick = document.getElementById("RightStick");
