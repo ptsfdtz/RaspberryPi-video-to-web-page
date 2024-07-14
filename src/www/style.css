@@ -1,0 +1,10 @@
+.stick, .trigger {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 20px;
+    padding: 10px;
+    border: 1px solid #000;
+    width: 200px;
+    height: 200px;
+}
