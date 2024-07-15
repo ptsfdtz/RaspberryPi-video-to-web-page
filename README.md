@@ -116,3 +116,52 @@ sudo systemctl enable joystick_server.service
 ```sh
 sudo systemctl status joystick_server.service
 ```
+
+配置树莓派摄像头使用`opencv`
+
+通过 python 使用 opencv 库调用摄像头的时读取到空图像
+
+![rpicam-apps](image/README/rpicam-apps.png)
+
+测试摄像头是否能被读取
+
+```sh
+libcamera-jpeg -o test.jpg
+```
+
+```sh
+vcgencmd get_camera
+```
+
+如果返回值是`supported=0 detected=0`则代表无法读取到硬件摄像头
+
+解决方案：安装 `Raspicam` 摄像头库
+
+```sh
+cd ~
+sudo apt install cmake gcc-aarch64-linux-gnu g++-aarch64-linux-gnu
+git clone https://github.com/raspberrypi/userland
+cd userland
+./buildme --aarch64
+sudo cp build/bin/* /bin/
+```
+
+修改 config.txt 文件
+
+```sh
+sudo /boot/firmware/config.txt
+```
+
+注释
+
+```sh
+#camera_auto_detect=1
+#dtoverlay=vc4-kms-v3d
+```
+
+添加
+
+```sh
+dtoverlay=vc4-fkms-v3d
+start_x=1
+```
