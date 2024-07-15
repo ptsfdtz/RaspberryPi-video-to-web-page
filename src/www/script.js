@@ -36,8 +36,8 @@ socket.onmessage = function (event) {
   const data = JSON.parse(event.data);
   const left = { x: data.left_stick[0], y: data.left_stick[1] };
   const right = { x: data.right_stick[0], y: data.right_stick[1] };
-  const L2 = data.triggers[0];
-  const R2 = data.triggers[1];
+  const L2 = data.triggers[1];
+  const R2 = data.triggers[0];
 
   updateView({ left, right, L2, R2 });
 
