@@ -4,7 +4,6 @@ import pygame
 import json
 
 pygame.init()
-
 pygame.joystick.init()
 
 if pygame.joystick.get_count() == 0:
@@ -16,19 +15,25 @@ joystick.init()
 
 print(f"手柄名称: {joystick.get_name()}")
 print(f"轴数量: {joystick.get_numaxes()}")
+print(f"按键数量: {joystick.get_numbuttons()}")  
 
 async def handle_client(websocket, path):
     async for message in websocket:
         if message == "get_joystick_data":
             pygame.event.pump()
-            left_stick = [joystick.get_axis(0), joystick.get_axis(1)]  # Y轴方向反转
-            right_stick = [joystick.get_axis(2), joystick.get_axis(3)]  # Y轴方向反转
-            triggers = [(joystick.get_axis(4) + 1) / 2, (joystick.get_axis(5) + 1) / 2]  # 转换为0到1
-
+            left_stick = [joystick.get_axis(0), joystick.get_axis(1)]  
+            right_stick = [joystick.get_axis(2), joystick.get_axis(3)]  
+            triggers = [(joystick.get_axis(4) + 1) / 2, (joystick.get_axis(5) + 1) / 2] 
+            
+            rb_state = joystick.get_button(6)  
+            lb_state = joystick.get_button(7)  
+            
             data = {
                 'left_stick': left_stick,
                 'right_stick': right_stick,
-                'triggers': triggers
+                'triggers': triggers,
+                'RB': rb_state,
+                'LB': lb_state
             }
 
             await websocket.send(json.dumps(data))

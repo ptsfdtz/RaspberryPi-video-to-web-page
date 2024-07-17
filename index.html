@@ -3,32 +3,65 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Video Stream</title>
-  </head>
-  <body>
-    <h1>Video Stream</h1>
-    <img id="video" width="320" height="240" />
+    <title>Gamepad Data</title>
     <script>
-      const video = document.getElementById("video");
-      const ws = new WebSocket("ws://192.168.10.103:8000");
+      let socket = new WebSocket("ws://192.168.10.103:8000");
 
-      ws.binaryType = "arraybuffer";
-
-      ws.onmessage = function (event) {
-        const arrayBuffer = event.data;
-        const byteArray = new Uint8Array(arrayBuffer);
-        const blob = new Blob([byteArray], { type: "image/jpeg" });
-        const url = URL.createObjectURL(blob);
-        video.src = url;
+      socket.onopen = function (event) {
+        console.log("WebSocket 连接成功！");
+        document.getElementById("status").textContent = "连接成功";
       };
 
-      ws.onopen = function () {
-        console.log("WebSocket connection established");
+      socket.onmessage = function (event) {
+        let data = JSON.parse(event.data);
+        document.getElementById(
+          "button-0"
+        ).textContent = `Button 0: ${data.directions[0]}`;
+        document.getElementById(
+          "button-1"
+        ).textContent = `Button 1: ${data.directions[1]}`;
+        document.getElementById(
+          "button-2"
+        ).textContent = `Button 2: ${data.directions[2]}`;
+        document.getElementById(
+          "button-3"
+        ).textContent = `Button 3: ${data.directions[3]}`;
+        document.getElementById(
+          "button-4"
+        ).textContent = `Button 4: ${data.right_buttons[0]}`;
+        document.getElementById(
+          "button-5"
+        ).textContent = `Button 5: ${data.right_buttons[1]}`;
+        document.getElementById(
+          "button-6"
+        ).textContent = `Button 6: ${data.right_buttons[2]}`;
+        document.getElementById(
+          "button-7"
+        ).textContent = `Button 7: ${data.right_buttons[3]}`;
       };
 
-      ws.onclose = function () {
-        console.log("WebSocket connection closed");
+      socket.onerror = function (error) {
+        console.error("WebSocket 错误:", error);
+      };
+
+      socket.onclose = function (event) {
+        console.log("WebSocket 连接关闭");
+        document.getElementById("status").textContent = "连接关闭";
       };
     </script>
+  </head>
+  <body>
+    <h1>Gamepad Data</h1>
+    <div id="status">连接中...</div>
+    <div id="data">
+      <p id="button-0">Button 0:</p>
+      <p id="button-1">Button 1:</p>
+      <p id="button-2">Button 2:</p>
+      <p id="button-3">Button 3:</p>
+      <p id="button-4">Button 4:</p>
+      <p id="button-5">Button 5:</p>
+      <p id="button-6">Button 6:</p>
+      <p id="button-7">Button 7:</p>
+    </div>
   </body>
 </html>

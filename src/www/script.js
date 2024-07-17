@@ -3,6 +3,9 @@ const leftStick = document.getElementById("LeftStick");
 const rightStick = document.getElementById("RightStick");
 const l2 = document.getElementById("L2");
 const r2 = document.getElementById("R2");
+const l1 = document.getElementById("L1");
+const r1 = document.getElementById("R1");
+
 const radius = parseInt(leftStick.getAttribute("r"));
 
 const wsVideo = new WebSocket("ws://192.168.10.103:8000");
@@ -40,8 +43,10 @@ wsJoystick.onmessage = function (event) {
   const right = { x: data.right_stick[0], y: data.right_stick[1] };
   const L2 = data.triggers[1];
   const R2 = data.triggers[0];
+  const L1 = data.RB;
+  const R1 = data.LB;
 
-  updateView({ left, right, L2, R2 });
+  updateView({ left, right, L2, R2, L1, R1 });
 
   setTimeout(requestJoystickData, 50);
 };
@@ -58,7 +63,7 @@ function requestJoystickData() {
   wsJoystick.send("get_joystick_data");
 }
 
-function updateView({ left, right, L2, R2 }) {
+function updateView({ left, right, L2, R2, L1, R1 }) {
   const scale = radius * 0.4;
   leftStick.setAttribute("cx", left.x * scale);
   leftStick.setAttribute("cy", left.y * scale);
@@ -74,7 +79,11 @@ function updateView({ left, right, L2, R2 }) {
 
   const L2Opacity = L2;
   const R2Opacity = R2;
-
   l2.style.fill = `rgba(0,0,0,${L2Opacity})`;
   r2.style.fill = `rgba(0,0,0,${R2Opacity})`;
+
+  const L1Opacity = L1;
+  const R1Opacity = R1;
+  l1.style.fill = `rgba(0,0,0,${L1Opacity})`;
+  r1.style.fill = `rgba(0,0,0,${R1Opacity})`;
 }

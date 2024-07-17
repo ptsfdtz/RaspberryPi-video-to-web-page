@@ -1,79 +1,39 @@
-import socket
-import matplotlib.pyplot as plt
-import matplotlib.animation as animation
+import asyncio
+import websockets
+import pygame
+import json
 
-# 初始化matplotlib
-fig, axs = plt.subplots(1, 3, figsize=(15, 5))
+pygame.init()
+pygame.joystick.init()
 
-left_stick_plot, = axs[0].plot([], [], 'bo')
-right_stick_plot, = axs[2].plot([], [], 'ro')
-lt_plot, = axs[1].plot([], [], 'g-', label='LT')
-rt_plot, = axs[1].plot([], [], 'm-', label='RT')
+if pygame.joystick.get_count() == 0:
+    print("没有手柄连接")
+    exit()
 
-axs[0].set_xlim(-1, 1)
-axs[0].set_ylim(-1, 1)
-axs[0].set_title('Left Stick')
-axs[0].set_aspect('equal', adjustable='box')
+joystick = pygame.joystick.Joystick(0)
+joystick.init()
 
-axs[2].set_ylim(-1, 1)
-axs[2].set_xlim(-1, 1)
-axs[2].set_title('Right Stick')
-axs[2].set_aspect('equal', adjustable='box')
+print(f"手柄名称: {joystick.get_name()}")
+print(f"轴数量: {joystick.get_numaxes()}")
+print(f"按钮数量: {joystick.get_numbuttons()}")
 
-axs[1].set_xlim(0, 100)
-axs[1].set_ylim(-1, 1)
-axs[1].set_title('Triggers')
-axs[1].legend()
+async def handle_client(websocket, path):
+    async for message in websocket:
+        if message == "get_button_state":
+            pygame.event.pump()
+            button_states = {
+                'button_0': joystick.get_button(0),
+                'button_1': joystick.get_button(1),
+                'button_2': joystick.get_button(2),
+                'button_3': joystick.get_button(3),
+                'button_4': joystick.get_button(4),
+                'button_5': joystick.get_button(5),
+                'button_6': joystick.get_button(6),
+                'button_7': joystick.get_button(7)
+            }
+            await websocket.send(json.dumps(button_states))
 
-lt_data = []
-rt_data = []
+start_server = websockets.serve(handle_client, "192.168.10.103", 8000)
 
-# 初始化摇杆数据（左摇杆: 轴0和1，右摇杆: 轴2和3，扳机: 轴4和5）
-left_stick = [0, 0]
-right_stick = [0, 0]
-triggers = [0, 0]
-
-def init():
-    left_stick_plot.set_data([], [])
-    right_stick_plot.set_data([], [])
-    lt_plot.set_data([], [])
-    rt_plot.set_data([], [])
-    return left_stick_plot, right_stick_plot, lt_plot, rt_plot
-
-def update(frame):
-    global left_stick, right_stick, triggers
-
-    client_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    host = socket.gethostname()
-    port = 12345
-
-    try:
-        client_socket.connect((host, port))
-        data = client_socket.recv(1024).decode('utf-8')
-        client_socket.close()
-
-        left_stick[0], left_stick[1], right_stick[0], right_stick[1], triggers[0], triggers[1] = map(float, data.split(','))
-
-        left_stick_plot.set_data([left_stick[0]], [left_stick[1]])
-        right_stick_plot.set_data([right_stick[0]], [right_stick[1]])
-
-        lt_data.append(triggers[0])
-        rt_data.append(triggers[1])
-
-        if len(lt_data) > 100:
-            lt_data.pop(0)
-        if len(rt_data) > 100:
-            rt_data.pop(0)
-
-        lt_plot.set_data(range(len(lt_data)), lt_data)
-        rt_plot.set_data(range(len(rt_data)), rt_data)
-
-    except Exception as e:
-        print(f"无法连接到服务器: {e}")
-
-    return left_stick_plot, right_stick_plot, lt_plot, rt_plot
-
-ani = animation.FuncAnimation(fig, update, init_func=init, blit=True, interval=50)
-
-plt.tight_layout()
-plt.show()
+asyncio.get_event_loop().run_until_complete(start_server)
+asyncio.get_event_loop().run_forever()
