@@ -3,40 +3,32 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>WebSocket Client Example</title>
+    <title>Video Stream</title>
   </head>
   <body>
-    <div id="messages"></div>
-
+    <h1>Video Stream</h1>
+    <img id="video" width="320" height="240" />
     <script>
-      // 创建WebSocket连接
-      const socket = new WebSocket("ws://192.168.10.103:12345");
+      const video = document.getElementById("video");
+      const ws = new WebSocket("ws://192.168.10.103:8000");
 
-      // 监听连接打开事件
-      socket.addEventListener("open", function (event) {
-        console.log("WebSocket连接已打开");
-        // 发送消息给服务器
-        socket.send("get_joystick_data");
-        console.log("已发送请求获取手柄数据");
-      });
+      ws.binaryType = "arraybuffer";
 
-      // 监听服务器发送的消息
-      socket.addEventListener("message", function (event) {
-        console.log("收到响应:", event.data);
-        // 显示接收到的消息
-        const messages = document.getElementById("messages");
-        messages.innerHTML += "<p>" + event.data + "</p>";
-      });
+      ws.onmessage = function (event) {
+        const arrayBuffer = event.data;
+        const byteArray = new Uint8Array(arrayBuffer);
+        const blob = new Blob([byteArray], { type: "image/jpeg" });
+        const url = URL.createObjectURL(blob);
+        video.src = url;
+      };
 
-      // 监听连接关闭事件
-      socket.addEventListener("close", function (event) {
-        console.log("WebSocket连接已关闭");
-      });
+      ws.onopen = function () {
+        console.log("WebSocket connection established");
+      };
 
-      // 监听连接错误事件
-      socket.addEventListener("error", function (event) {
-        console.error("WebSocket连接发生错误:", event);
-      });
+      ws.onclose = function () {
+        console.log("WebSocket connection closed");
+      };
     </script>
   </body>
 </html>

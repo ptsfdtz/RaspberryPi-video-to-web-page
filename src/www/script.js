@@ -1,10 +1,62 @@
-const socket = new WebSocket("ws://192.168.10.103:12345");
-
+const video = document.getElementById("video");
 const leftStick = document.getElementById("LeftStick");
 const rightStick = document.getElementById("RightStick");
 const l2 = document.getElementById("L2");
 const r2 = document.getElementById("R2");
 const radius = parseInt(leftStick.getAttribute("r"));
+
+const wsVideo = new WebSocket("ws://192.168.10.103:8000");
+const wsJoystick = new WebSocket("ws://192.168.10.103:8000"); // 统一使用相同的 IP 和端口
+
+wsVideo.binaryType = "arraybuffer";
+
+wsVideo.onmessage = function (event) {
+  const arrayBuffer = event.data;
+  const blob = new Blob([arrayBuffer], { type: "image/jpeg" });
+  const url = URL.createObjectURL(blob);
+  video.src = url;
+};
+
+wsVideo.onopen = function () {
+  console.log("WebSocket connection for video stream established");
+};
+
+wsVideo.onclose = function () {
+  console.log("WebSocket connection for video stream closed");
+};
+
+wsVideo.onerror = function (error) {
+  console.log("WebSocket Error (video stream): " + error);
+};
+
+wsJoystick.onopen = function () {
+  console.log("Connected to joystick server");
+  requestJoystickData();
+};
+
+wsJoystick.onmessage = function (event) {
+  const data = JSON.parse(event.data);
+  const left = { x: data.left_stick[0], y: data.left_stick[1] };
+  const right = { x: data.right_stick[0], y: data.right_stick[1] };
+  const L2 = data.triggers[1];
+  const R2 = data.triggers[0];
+
+  updateView({ left, right, L2, R2 });
+
+  setTimeout(requestJoystickData, 50);
+};
+
+wsJoystick.onerror = function (error) {
+  console.log("WebSocket Error (joystick): " + error);
+};
+
+wsJoystick.onclose = function () {
+  console.log("WebSocket connection for joystick data closed");
+};
+
+function requestJoystickData() {
+  wsJoystick.send("get_joystick_data");
+}
 
 function updateView({ left, right, L2, R2 }) {
   const scale = radius * 0.4;
@@ -25,33 +77,4 @@ function updateView({ left, right, L2, R2 }) {
 
   l2.style.fill = `rgba(0,0,0,${L2Opacity})`;
   r2.style.fill = `rgba(0,0,0,${R2Opacity})`;
-}
-
-socket.onopen = function () {
-  console.log("Connected to server");
-  requestJoystickData();
-};
-
-socket.onmessage = function (event) {
-  const data = JSON.parse(event.data);
-  const left = { x: data.left_stick[0], y: data.left_stick[1] };
-  const right = { x: data.right_stick[0], y: data.right_stick[1] };
-  const L2 = data.triggers[1];
-  const R2 = data.triggers[0];
-
-  updateView({ left, right, L2, R2 });
-
-  setTimeout(requestJoystickData, 50);
-};
-
-socket.onerror = function (error) {
-  console.log("WebSocket Error: " + error);
-};
-
-socket.onclose = function () {
-  console.log("WebSocket connection closed");
-};
-
-function requestJoystickData() {
-  socket.send("get_joystick_data");
 }
