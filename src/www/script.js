@@ -9,7 +9,7 @@ const r1 = document.getElementById("R1");
 const radius = parseInt(leftStick.getAttribute("r"));
 
 const wsVideo = new WebSocket("ws://192.168.10.103:8000");
-const wsJoystick = new WebSocket("ws://192.168.10.103:8000"); // 统一使用相同的 IP 和端口
+const wsJoystick = new WebSocket("ws://192.168.10.103:8001");
 
 wsVideo.binaryType = "arraybuffer";
 
