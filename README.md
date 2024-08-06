@@ -149,7 +149,7 @@ sudo cp build/bin/* /bin/
 修改 config.txt 文件
 
 ```sh
-sudo /boot/firmware/config.txt
+sudo nano /boot/config.txt
 ```
 
 注释
